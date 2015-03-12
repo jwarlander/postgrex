@@ -24,31 +24,42 @@ defmodule Postgrex.Types do
 
   @doc false
   def bootstrap_query(m, version) do
-    if version >= 90_200 do
-      rngsubtype = "coalesce(r.rngsubtype, 0)"
-      join_range = "LEFT JOIN pg_range AS r ON r.rngtypid = t.oid"
+    if version < 80_400 do
+      # Vertica; no extension support, just return an empty rowset
+      """
+      SELECT null::varchar, null::varchar,
+             null::varchar, null::varchar,
+             null::varchar, null::varchar,
+             null::varchar, null::varchar, null::varchar
+      LIMIT 0
+      """
     else
-      rngsubtype = "0"
-      join_range = ""
-    end
+      if version >= 90_200 do
+        rngsubtype = "coalesce(r.rngsubtype, 0)"
+        join_range = "LEFT JOIN pg_range AS r ON r.rngtypid = t.oid"
+      else
+          rngsubtype = "0"
+          join_range = ""
+      end
 
-    """
-    SELECT t.oid, t.typname, t.typsend, t.typreceive, t.typoutput, t.typinput,
-           t.typelem, #{rngsubtype}, ARRAY (
-      SELECT a.atttypid
-      FROM pg_attribute AS a
-      WHERE a.attrelid = t.typrelid AND a.attnum > 0 AND NOT a.attisdropped
-      ORDER BY a.attnum
-    )
-    FROM pg_type AS t
-    #{join_range}
-    WHERE
-      t.typname::text = ANY ((#{sql_array(m.type)})::text[]) OR
-      t.typsend::text = ANY ((#{sql_array(m.send)})::text[]) OR
-      t.typreceive::text = ANY ((#{sql_array(m.receive)})::text[]) OR
-      t.typoutput::text = ANY ((#{sql_array(m.output)})::text[]) OR
-      t.typinput::text = ANY ((#{sql_array(m.input)})::text[])
-    """
+      """
+      SELECT t.oid, t.typname, t.typsend, t.typreceive, t.typoutput, t.typinput,
+             t.typelem, #{rngsubtype}, ARRAY (
+        SELECT a.atttypid
+        FROM pg_attribute AS a
+        WHERE a.attrelid = t.typrelid AND a.attnum > 0 AND NOT a.attisdropped
+        ORDER BY a.attnum
+      )
+      FROM pg_type AS t
+      #{join_range}
+      WHERE
+        t.typname::text = ANY ((#{sql_array(m.type)})::text[]) OR
+        t.typsend::text = ANY ((#{sql_array(m.send)})::text[]) OR
+        t.typreceive::text = ANY ((#{sql_array(m.receive)})::text[]) OR
+        t.typoutput::text = ANY ((#{sql_array(m.output)})::text[]) OR
+        t.typinput::text = ANY ((#{sql_array(m.input)})::text[])
+      """
+    end
   end
 
   @doc false
