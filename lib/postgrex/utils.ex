@@ -1,6 +1,8 @@
 defmodule Postgrex.Utils do
   @moduledoc false
 
+  require Logger
+
   def error(error, s) do
     reply(error, s)
     {:stop, error, s}
@@ -30,6 +32,7 @@ defmodule Postgrex.Utils do
   Converts pg major.minor.patch (http://www.postgresql.org/support/versioning) version to an integer
   """
   def version_to_int(version) do
+    Logger.debug("Received PostgreSQL version: #{version}")
     case version |> String.split(".") |> Enum.map(fn (part) -> elem(Integer.parse(part),0) end) do
       [major, minor, patch] -> major*10_000 + minor*100 + patch
       [major, minor] -> major*10_000 + minor*100

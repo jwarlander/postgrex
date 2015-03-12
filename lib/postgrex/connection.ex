@@ -9,6 +9,7 @@ defmodule Postgrex.Connection do
   alias Postgrex.Types
   import Postgrex.BinaryUtils
   import Postgrex.Utils
+  require Logger
 
   @timeout 5000
   @default_extensions [{Postgrex.Extensions.Binary, nil}, {Postgrex.Extensions.Text, nil}]
@@ -348,6 +349,8 @@ defmodule Postgrex.Connection do
     timeout   = opts[:timeout] || @timeout
     sock_opts = [{:active, :once}, {:packet, :raw}, :binary]
     extensions  = (opts[:extensions] || []) ++ @default_extensions
+
+    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
 
     command = new_command({:connect, opts}, from)
     queue = :queue.in(command, queue)

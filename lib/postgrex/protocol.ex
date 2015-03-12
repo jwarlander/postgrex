@@ -9,6 +9,7 @@ defmodule Postgrex.Protocol do
   require Logger
 
   def startup_ssl(%{sock: sock} = s) do
+    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
     case msg_send(msg_ssl_request(), sock) do
       :ok ->
         {:noreply, %{s | state: :ssl}}
@@ -18,6 +19,7 @@ defmodule Postgrex.Protocol do
   end
 
   def startup(%{sock: sock, opts: opts} = s) do
+    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
     params = opts[:parameters] || []
     user = Keyword.fetch!(opts, :username)
     database = Keyword.fetch!(opts, :database)
@@ -326,11 +328,15 @@ defmodule Postgrex.Protocol do
   defp msg_send(msg, %{sock: sock}), do: msg_send(msg, sock)
 
   defp msg_send(msgs, {mod, sock}) when is_list(msgs) do
+    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
+    Logger.debug("#{inspect msgs})")
     binaries = Enum.reduce(msgs, [], &[&2 | encode_msg(&1)])
     mod.send(sock, binaries)
   end
 
   defp msg_send(msg, {mod, sock}) do
+    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
+    Logger.debug("#{inspect msg})")
     data = encode_msg(msg)
     mod.send(sock, data)
   end
