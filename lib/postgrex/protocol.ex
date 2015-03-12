@@ -179,6 +179,11 @@ defmodule Postgrex.Protocol do
     {:ok, %{s | rows: [], statement: nil, portal: nil}}
   end
 
+  def message(:executing, msg_portal_suspend(), s) do
+    # Vertica appears to send this.. just pretend we're done.
+    message(:executing, msg_command_complete(), s)
+  end
+
   def message(:executing, msg_empty_query(), s) do
     reply(%Postgrex.Result{}, s)
     {:ok, s}
