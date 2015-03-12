@@ -159,6 +159,7 @@ defmodule Postgrex.Protocol do
   end
 
   def message(:executing, msg_command_complete(tag: tag), s) do
+    Logger.debug("message: #{inspect [tag, s]}")
     reply =
       if is_nil(s.statement) do
         create_result(tag)
@@ -305,6 +306,7 @@ defmodule Postgrex.Protocol do
   end
 
   defp create_result(tag, rows, cols) do
+    Logger.debug("create_result: #{inspect [tag, rows, cols]}")
     {command, nrows} = decode_tag(tag)
 
     # Fix for PostgreSQL 8.4 (doesn't include number of selected rows in tag)
@@ -317,6 +319,7 @@ defmodule Postgrex.Protocol do
   end
 
   defp decode_tag(tag) do
+    Logger.debug("decode_tag: #{inspect tag}")
     words = :binary.split(tag, " ", [:global])
     words = Enum.map(words, fn word ->
       case Integer.parse(word) do
@@ -333,15 +336,13 @@ defmodule Postgrex.Protocol do
   defp msg_send(msg, %{sock: sock}), do: msg_send(msg, sock)
 
   defp msg_send(msgs, {mod, sock}) when is_list(msgs) do
-    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
-    Logger.debug("#{inspect msgs})")
+    Logger.debug("msg_send: #{inspect msgs}")
     binaries = Enum.reduce(msgs, [], &[&2 | encode_msg(&1)])
     mod.send(sock, binaries)
   end
 
   defp msg_send(msg, {mod, sock}) do
-    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
-    Logger.debug("#{inspect msg})")
+    Logger.debug("msg_send: #{inspect msg}")
     data = encode_msg(msg)
     mod.send(sock, data)
   end

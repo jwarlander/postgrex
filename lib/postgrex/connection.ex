@@ -427,7 +427,9 @@ defmodule Postgrex.Connection do
 
     case data do
       <<data :: binary(size), tail :: binary>> ->
+        Logger.debug("new_data: #{inspect [[type, size, data], s]}")
         msg = Messages.parse(type, size, data)
+        Logger.debug("new_data: msg = #{inspect msg}")
         case Protocol.message(state, msg, s) do
           {:ok, s} -> new_data(tail, s)
           {:error, _, _} = err -> err

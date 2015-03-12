@@ -6,6 +6,7 @@ defmodule Postgrex.Types do
   alias Postgrex.TypeInfo
   alias Postgrex.Extension
   import Postgrex.BinaryUtils
+  require Logger
 
   @typedoc """
   Postgres internal identifier that maps to a type. See
@@ -24,6 +25,7 @@ defmodule Postgrex.Types do
 
   @doc false
   def bootstrap_query(m, version) do
+    Logger.debug("bootstrap_query: #{inspect(m)} // #{inspect(version)}")
     if version < 80_400 do
       # Vertica; no extension support, just return an empty rowset
       """
