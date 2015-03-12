@@ -29,6 +29,18 @@ defmodule Postgrex.Utils do
   end
 
   @doc """
+  Converts Vertica "vN.N.N-N" version to an integer
+  """
+  def version_to_int("v" <> version) do
+    Logger.debug("Received Vertica version: #{version}")
+    case version |> String.split("-") |> hd |> String.split(".") |> Enum.map(fn (part) -> elem(Integer.parse(part),0) end) do
+      [major, minor, patch] -> major*10_000 + minor*100 + patch
+      [major, minor] -> major*10_000 + minor*100
+      [major] -> major*10_000 
+    end
+  end
+
+  @doc """
   Converts pg major.minor.patch (http://www.postgresql.org/support/versioning) version to an integer
   """
   def version_to_int(version) do
