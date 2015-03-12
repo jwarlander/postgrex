@@ -160,7 +160,7 @@ defmodule Postgrex.Protocol do
   end
 
   def message(:executing, msg_command_complete(tag: tag), s) do
-    Logger.debug("message: #{inspect [tag, s]}")
+    Logger.debug("message: (msg_command_complete) #{inspect [tag, s]}")
     reply =
       if is_nil(s.statement) do
         create_result(tag)
@@ -183,6 +183,10 @@ defmodule Postgrex.Protocol do
 
   def message(:executing, msg_portal_suspend(), s) do
     # Vertica appears to send this.. just pretend we're done.
+    # - should probably prefer to wait for msg_ready and respond
+    # with the result at that time; add "vertica" indicator to
+    # our state, so we can pattern match better.. and not propagate
+    # stuff to the postgres code.
     message(:executing, msg_command_complete(), s)
   end
 
