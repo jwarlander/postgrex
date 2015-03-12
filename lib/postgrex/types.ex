@@ -87,7 +87,15 @@ defmodule Postgrex.Types do
   end
 
   @doc false
-  def build_types(rows) do
+  def build_types(rows, version) do
+    if version < 80_400 do
+      # Vertica
+      [
+        %TypeInfo{oid: 9, type: "varchar", send: "varcharsend",
+          receive: "varcharrecv", output: "varcharout", input: "varcharin",
+          array_elem: "", base_type: "", comp_elems: "{}"},
+      ]
+    else
     Enum.map(rows, fn row ->
       [<<_::int32, oid::binary>>,
        <<_::int32, type::binary>>,
@@ -114,6 +122,7 @@ defmodule Postgrex.Types do
         base_type: base_oid,
         comp_elems: comp_oids}
     end)
+    end
   end
 
   @doc false

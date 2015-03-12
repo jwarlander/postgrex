@@ -152,7 +152,8 @@ defmodule Postgrex.Protocol do
   def message(:executing, msg_command_complete(), %{bootstrap: true} = s) do
     reply(:ok, s)
     {extensions, extension_opts} = s.extensions
-    types = Types.build_types(s.rows)
+    version = s.parameters["server_version"] |> version_to_int
+    types = Types.build_types(s.rows, version)
     types = Types.associate_extensions_with_types(extensions, extension_opts, types)
     types = {types, extension_opts}
     {:ok, %{s | rows: [], bootstrap: false, types: types}}
