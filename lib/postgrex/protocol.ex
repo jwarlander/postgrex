@@ -319,6 +319,12 @@ defmodule Postgrex.Protocol do
                      columns: cols}
   end
 
+  defp decode_tag(nil) do
+    # Vertica hack; we don't get an msg_command_complete, just
+    # msg_portal_suspend instead? And no tag to decode on that msg..
+    {:select, nil}
+  end
+
   defp decode_tag(tag) do
     Logger.debug("decode_tag: #{inspect tag}")
     words = :binary.split(tag, " ", [:global])
