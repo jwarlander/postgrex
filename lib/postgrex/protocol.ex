@@ -9,7 +9,6 @@ defmodule Postgrex.Protocol do
   require Logger
 
   def startup_ssl(%{sock: sock} = s) do
-    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
     case msg_send(msg_ssl_request(), sock) do
       :ok ->
         {:noreply, %{s | state: :ssl}}
@@ -19,7 +18,6 @@ defmodule Postgrex.Protocol do
   end
 
   def startup(%{sock: sock, opts: opts} = s) do
-    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
     params = opts[:parameters] || []
     user = Keyword.fetch!(opts, :username)
     database = Keyword.fetch!(opts, :database)
@@ -160,7 +158,6 @@ defmodule Postgrex.Protocol do
   end
 
   def message(:executing, msg_command_complete(tag: tag), s) do
-    Logger.debug("message: (msg_command_complete) #{inspect [tag, s]}")
     reply =
       if is_nil(s.statement) do
         create_result(tag)
@@ -311,7 +308,6 @@ defmodule Postgrex.Protocol do
   end
 
   defp create_result(tag, rows, cols) do
-    Logger.debug("create_result: #{inspect [tag, rows, cols]}")
     {command, nrows} = decode_tag(tag)
 
     # Fix for PostgreSQL 8.4 (doesn't include number of selected rows in tag)
@@ -326,11 +322,11 @@ defmodule Postgrex.Protocol do
   defp decode_tag(nil) do
     # Vertica hack; we don't get an msg_command_complete, just
     # msg_portal_suspend instead? And no tag to decode on that msg..
+    Logger.debug("decode_tag: tag = nil; using Vertica hack")
     {:select, nil}
   end
 
   defp decode_tag(tag) do
-    Logger.debug("decode_tag: #{inspect tag}")
     words = :binary.split(tag, " ", [:global])
     words = Enum.map(words, fn word ->
       case Integer.parse(word) do

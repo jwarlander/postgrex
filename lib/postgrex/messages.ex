@@ -3,7 +3,6 @@ defmodule Postgrex.Messages do
 
   import Postgrex.BinaryUtils
   import Record, only: [defrecord: 2]
-  require Logger
 
   @protocol_vsn_major 3
   @protocol_vsn_minor 0
@@ -127,7 +126,6 @@ defmodule Postgrex.Messages do
 
   # portal_suspended
   def parse(?s, size, rest) do
-    Logger.debug("parse: msg_portal_suspend(#{inspect [size, rest]})")
     msg_portal_suspend()
   end
 
@@ -253,10 +251,8 @@ defmodule Postgrex.Messages do
   end
 
   defp decode_string(bin) do
-    Logger.debug("decode_string: #{inspect bin}")
     {pos, 1} = :binary.match(bin, <<0>>)
     {string, <<0, rest :: binary>>} = :erlang.split_binary(bin, pos)
-    Logger.debug("decode_string (result): #{inspect [string, rest]}")
     {string, rest}
   end
 

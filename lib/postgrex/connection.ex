@@ -350,8 +350,6 @@ defmodule Postgrex.Connection do
     sock_opts = [{:active, :once}, {:packet, :raw}, :binary]
     extensions  = (opts[:extensions] || []) ++ @default_extensions
 
-    Logger.debug("#{inspect __ENV__.function} (#{__ENV__.file}:#{__ENV__.line})")
-
     command = new_command({:connect, opts}, from)
     queue = :queue.in(command, queue)
     s = %{s | opts: opts, queue: queue, extensions: extensions}
@@ -427,9 +425,8 @@ defmodule Postgrex.Connection do
 
     case data do
       <<data :: binary(size), tail :: binary>> ->
-        Logger.debug("new_data: #{inspect [[type, size, data], s]}")
         msg = Messages.parse(type, size, data)
-        Logger.debug("new_data: msg = #{inspect msg}")
+        Logger.debug("new_data: #{inspect msg}")
         case Protocol.message(state, msg, s) do
           {:ok, s} -> new_data(tail, s)
           {:error, _, _} = err -> err
